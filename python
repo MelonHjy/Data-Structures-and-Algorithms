@@ -385,3 +385,71 @@ print(g.BFS(1))
 # 二叉搜索树
 顺序性：任一节点均‘不小于/不大于’其‘左/右’后代
 BST的中序遍历序列，必然单调非降（充要条件）
+class BST(BinTree):
+    def search(self, data):
+        node = self.root
+        parent = None    # 父节点
+        new_node = Node(None)  # 空节点
+        while node:
+            if node.data == data:
+                return node, parent
+            elif node.data < data:
+                parent = node
+                if node.rchild is None:
+                    node.rchild = new_node
+                    return new_node, parent
+                node = node.rchild
+            else:
+                parent = node
+                if node.lchild is None:
+                    node.lchild = new_node
+                    return new_node, parent
+                node = node.lchild
+        return node, parent
+    def insert(self, data):
+        node, parent = self.search(data)
+        if node is None:
+            self.root = Node(data)
+        else:
+            node.data = data
+    def remove(self, data):
+        node, parent = self.search(data)
+        if node is None or node.data is None:
+            return False
+        else:
+            # 某一子树为空
+            if node.lchild is None:
+                if data < parent.data:
+                    parent.lchild = node.rchild
+                else:
+                    parent.rchild = node.rchild
+                del node
+            elif node.rchild is None:
+                if data < parent.data:
+                    parent.lchild = node.lchild
+                else:
+                    parent.rchild = node.lchild
+                del node
+            # 子树都不为空
+            else:
+                succ = node.rchild
+                if succ.lchild is None:
+                    node.data = succ.data
+                    node.rchild = succ.rchild
+                else:
+                    while succ.lchild:
+                        parent = succ
+                        succ = succ.lchild
+                    node.data = succ.data
+                    parent.lchild = succ.rchild
+                del succ
+        return True
+
+b = BST()
+for i in [16, 10, 25, 5, 11, 19, 28, 30, 21]:
+    b.insert(i)
+print(b.inorder(b.root))
+b.remove(25)
+print(b.inorder(b.root))
+print(b.preorder(b.root))
+print(b.travLevel(b.root))
