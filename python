@@ -1,0 +1,387 @@
+# 数组求和：线性递归
+def LinearSum(L):
+    if not L:
+        return 0
+    return LinearSum(L[:-1])+L[-1]
+
+print(LinearSum([15,25,89,265,454,1]))
+# 数组求和：二分递归
+def erfenSum(L):
+    mid = len(L) //2
+    if len(L) == 1:
+        return L[0]
+    return erfenSum(L[:mid])+erfenSum(L[mid:])
+
+
+print(erfenSum([15,25,89,265,454,1]))
+------------------------------------------------------
+最长公共子序列：两个序列公共子序列中最长者
+LCS算法:求两字符串最大公共字符串
+------------------------------------------------------
+# 动态规划入门：
+def minCoin(money):
+    coin = [1, 2, 3, 5]
+    if money == 0:
+        return 0
+    L = []
+    for i in coin:
+        if money >= i:
+            L.append(minCoin(money-i)+1)
+    return min(L)
+
+for k in range(0,12):
+    print(minCoin(k))
+
+# 动态规划初级：
+
+# 动态规划中级：
+
+# 动态规划中高级：
+
+# 动态规划高级：
+------------------------------------------------------
+# 有序向量的查找（python列表用index）
+class myList(list)
+	# 二分查找（头哨兵lo-1，尾哨兵hi）
+    def binSearch(self, e, lo=0, hi=0):
+        if hi == 0:
+            hi = self.__len__()
+        while lo < hi:
+            mi = (lo+hi)//2
+            if e < self[mi]:
+                hi = mi
+            elif self[mi] < e:
+                lo = mi+1
+            else:
+                return mi
+        return -1
+	# fib查找
+    # 二分查找（改进）
+    def binSearch2(self, e, lo=0, hi=0):
+        if hi == 0:
+            hi = self.__len__()
+        while lo < hi:
+            mi = (lo+hi)//2
+            if e < self[mi]:
+                hi = mi
+            else:
+                lo = mi + 1
+        return lo-1
+
+a = myList([1,2,3])
+print(a.binSearch(3, 0, 1))
+print(a.binSearch2(3, 0, 1))
+------------------------------------------------------
+# 冒泡排序，最好O(n), 最坏O(n2)
+def bubbleSort(list):
+    for i in range(len(list)-1):
+        for j in range(len(list)-1-i):
+            if list[j]>list[j+1]:
+                list[j], list[j+1] = list[j+1], list[j]
+    return list
+
+# 改进
+def bubbleSort(list, lo, hi):
+    while not bubble(list, lo, hi):
+        hi -= 1
+def bubble(list, lo, hi):
+    sorted = True
+    while lo < hi:
+        lo += 1
+        if list[lo-1] > list[lo]:
+            list[lo-1], list[lo] =list[lo], list[lo-1]
+            sorted = False
+    return sorted
+
+# 再改进
+def bubbleSort(list, lo, hi):
+    while lo < hi:
+        hi = bubble(list, lo, hi)
+def bubble(list, lo, hi):
+    last = lo
+    while lo < hi:
+        lo += 1
+        if list[lo-1] > list[lo]:
+            list[lo - 1], list[lo] = list[lo], list[lo - 1]
+            last = lo
+    return last
+---------------------------------------------------------------
+# 归并排序 O(nlogn)
+def MergeSort(L):
+    if len(L) < 2:
+        return L
+    mid = len(L) // 2
+    left = MergeSort(L[:mid])
+    right = MergeSort(L[mid:])
+    return Merge(left, right)
+
+def Merge(left, right):
+    l, r = 0, 0
+    result = []
+    while l < len(left) and r < len(right):
+        if left[l] < right[r]:
+            result.append(left[l])
+            l += 1
+        else:
+            result.append(right[r])
+            r += 1
+    result += left[l:]
+    result += right[r:]
+    return result
+print(MergeSort([5,4,5,8,9,44,15,28,489,45,21,23]))
+----------------------------------------------------------
+# 删除有序列表中重复元素 O(n)
+def uniquify(list):
+    i = 0
+    while i < len(list)-1:
+        if list[i] == list[i+1]:
+            list.remove(list[i+1])
+        else:
+            i += 1
+
+L = [1,1,1,1]
+uniquify(L)
+print(L)
+---------------------------------------------------------
+# 选择排序 O(n2)
+def selectSort(list):
+	for i in range(len(list)-1):  # 每次循环，把最小的放到本次循环的第一位，n-1次后排好
+		min = i	
+		for j in range(i+1, len(list)):    
+			if list[min] > list[j]:
+				min = j
+		list[i], list[min] = list[min],list[i]
+	return list
+-------------------------------------------------------------
+# 插入排序 O(n2)(复杂度：逆序对总数+n) input-sensitive排序敏感
+def insertionSort(list):
+    for i in range(1, len(list)):  # 每次循环相当于抽到新的牌
+        temp = list[i]             # 把新的牌的值抽出
+        j = i-1				       # j指向新牌的前一张
+        while j >= 0 and temp < list[j]:   # 若新牌比前一张牌小
+            list[j+1] = list[j]    # 前牌后移
+            j -= 1				   # 再把j指向新牌的再前一张
+        list[j+1] = temp           # temp所指向元素的最终位置
+    return list
+
+print(insertionSort([2, 2, 5, 4, 3, 6]))
+--------------------------------------------------------------
+# python列表   效率
+import time
+def reverse(L): # 循位置访问
+    for i in range(0, len(L)):
+        L.insert(i, L.pop())
+    return L
+def reverse2(L): # 循秩访问
+    i, j = 0, len(L)-1
+    while i < j:
+        L[i], L[j] = L[j], L[i]
+        i, j = i+1, j-1
+    return L
+
+L = [i for i in range(0,100000)]
+a=time.time()
+reverse(L)
+b=time.time()
+print(b-a)
+reverse2(L)
+c=time.time()
+print(c-b)
+-----------------------------------------------------------
+# 栈应用：进制转换
+def convert(num, base):
+    stack = []
+    while num > 0:
+        stack.append(num % base)
+        num = num // base
+    while stack:
+        print(stack.pop())
+
+convert(35, 2)
+-----------------------------------------------------------
+# 栈应用：括号匹配    *使用计数器不好：反例 '[(])'
+def paren(string):
+    stack = []
+    for i in string:
+        if i == '(':
+            stack.append(i)
+        elif i == ')'and stack:
+            stack.pop()
+        else:
+            return False
+    if stack:
+        return False
+    else:
+        return True
+
+print(paren('(())'))
+print(paren('([))'))
+print(paren('(()))'))
+-----------------------------------------------------------
+# 栈混洗 258
+# 栈应用：中缀表达式求值 265
+-------------------------------------------------------------
+# 逆波兰（简易实现加减乘除）
+def calculate():
+    tab = {'+': 1, '-': 1, '*': 2, '/': 2}
+    token = input('算式：').split(' ')
+# 将中缀表达式转成后缀表达式
+    RPN, stack = [], []
+    for i in token:
+        if i.isdigit():         # 如果是整数
+            RPN.append(i)
+        else:                  # 如果是运算符
+            while i not in stack:
+                if stack == [] or tab[i] > tab[stack[-1]]:
+                    stack.append(i)
+                else:
+                    RPN.append(stack.pop())
+    while stack:
+        RPN.append(stack.pop())
+# 求值
+    result = []
+    for j in RPN:
+        if j.isdigit():
+            result.append(j)
+        else:
+            num1 = result.pop()
+            num2 = result.pop()
+            result.append(eval(str(num2)+j+str(num1)))
+    return print(result[0])
+
+calculate() # 输入 1 - 2 * 3 + 4  ==> ['1','2','3','*','-','4','+'] ==> -1
+-----------------------------------------------------------------------------
+# 队列 286
+-----------------------------------------------------------------------------
+# 二叉树实现
+class Node(object):
+    def __init__(self, data):
+        self.data = data
+        self.lchild = None
+        self.rchild = None
+
+class BinTree(object):
+    def __init__(self):
+        self.root = None
+    def insert(self, data):
+        node = Node(data)
+        if self.root is None:
+            self.root = node
+        else:
+            L = [self.root]
+            while True:
+                parNode = L.pop(0)
+                if parNode.lchild is None:
+                    parNode.lchild = node
+                    return
+                elif parNode.rchild is None:
+                    parNode.rchild = node
+                    return
+                else:
+                    L.append(parNode.lchild)
+                    L.append(parNode.rchild)
+    # 先序遍历
+    def preorder(self, root):
+        stack = []
+        result = []
+        while True:
+            while root:
+                result.append(root.data)
+                stack.append(root.rchild)
+                root = root.lchild
+            if not stack:
+                break
+            root = stack.pop()
+        return result
+    # 中序遍历
+    def inorder(self, root):
+        stack = []
+        result = []
+        while True:
+            while root:
+                stack.append(root)
+                root = root.lchild
+            if not stack:
+                break
+            popNode = stack.pop()
+            result.append(popNode.data)
+            root = popNode.rchild
+        return result
+    # 后序遍历
+    # 层次遍历
+    def travLevel(self, root):
+        queue = [root]
+        result = []
+        while queue:     # 队列变空前，反复迭代
+            x = queue.pop(0)    # 取出队首节点
+            result.append(x.data)
+            if x.lchild:
+                queue.append(x.lchild)
+            if x.rchild:
+                queue.append(x.rchild)
+        return result
+------------------------------------------------------------
+# 二叉树是多叉树的特例，但在有根且有序时，二叉树可以描述多叉树
+# 二叉树重构：
+1、[先序|后序]+中序 
+preorder:   V ---left---|---right---
+inorder:    ---left--- V ---right---
+postorder:  ---left---|---right--- V
+left与right都可能为空，故先序+后序不能重构
+2、[先序+后序]*真二叉树
+preorder:   V 'l'--left---|'r'--right---
+postorder:  ---left--'l'|---right--'r' V
+left与right要么都为空，要么都存在
+------------------------------------------------------------
+# 图的深度优先搜索与广度优先搜索
+class Graph(object):
+    def __init__(self):         # 邻接表:key是点，value是与key相连接的点
+        self.node_neighbors = {}
+    def add_nodes(self, nodes):
+        for node in nodes:
+            self.add_node(node)
+    def add_node(self, node):
+        if node not in self.node_neighbors.keys():
+            self.node_neighbors[node] = []
+    def add_edges(self, edges):
+        for edge in edges:
+            self.add_edge(edge)
+    def add_edge(self, edge):
+        v, u = edge
+        if v not in self.node_neighbors[u] or u not in self.node_neighbors[v]:
+            self.node_neighbors[u].append(v)
+            if v != u:
+                self.node_neighbors[v].append(u)
+    def DFS(self, root=None):        # 深度优先搜索，用递归
+        result = []
+        def dfs(node):
+            result.append(node)
+            for n in self.node_neighbors[node]:
+                if n not in result:
+                    dfs(n)
+        if root:
+            dfs(root)
+        for node in self.node_neighbors.keys():
+            if node not in result:
+                dfs(node)
+        return result
+    def BFS(self, root):		# 广度优先搜索
+        result = []
+        stack = [root]
+        while stack:
+            node = stack.pop(0)
+            result.append(node)
+            for n in self.node_neighbors[node]:
+                if n not in result and n not in stack:
+                    stack.append(n)
+        return result
+
+g = Graph()
+g.add_nodes(i for i in range(1, 9))
+g.add_edges([(1, 2),(1, 3),(2, 4),(2, 5),(4, 8),(5, 8),(3, 6),(3, 7),(6, 7)])
+print(g.DFS(1))
+print(g.BFS(1))
+---------------------------------------------------------------------------------
+# 二叉搜索树
+顺序性：任一节点均‘不小于/不大于’其‘左/右’后代
+BST的中序遍历序列，必然单调非降（充要条件）
