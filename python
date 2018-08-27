@@ -259,10 +259,13 @@ class Node(object):
         self.data = data
         self.lchild = None
         self.rchild = None
+        self.height = 0
+        self.parent = None
 
 class BinTree(object):
     def __init__(self):
         self.root = None
+
     def insert(self, data):
         node = Node(data)
         if self.root is None:
@@ -280,6 +283,7 @@ class BinTree(object):
                 else:
                     L.append(parNode.lchild)
                     L.append(parNode.rchild)
+
     # 先序遍历
     def preorder(self, root):
         stack = []
@@ -293,6 +297,7 @@ class BinTree(object):
                 break
             root = stack.pop()
         return result
+
     # 中序遍历
     def inorder(self, root):
         stack = []
@@ -307,13 +312,14 @@ class BinTree(object):
             result.append(popNode.data)
             root = popNode.rchild
         return result
+
     # 后序遍历
     # 层次遍历
     def travLevel(self, root):
         queue = [root]
         result = []
-        while queue:     # 队列变空前，反复迭代
-            x = queue.pop(0)    # 取出队首节点
+        while queue:  # 队列变空前，反复迭代
+            x = queue.pop(0)  # 取出队首节点
             result.append(x.data)
             if x.lchild:
                 queue.append(x.lchild)
@@ -365,7 +371,7 @@ class Graph(object):
             if node not in result:
                 dfs(node)
         return result
-    def BFS(self, root):		# 广度优先搜索
+    def BFS(self, root):	     # 广度优先搜索
         result = []
         stack = [root]
         while stack:
@@ -386,70 +392,189 @@ print(g.BFS(1))
 顺序性：任一节点均‘不小于/不大于’其‘左/右’后代
 BST的中序遍历序列，必然单调非降（充要条件）
 class BST(BinTree):
-    def search(self, data):
+    def updateHeight(self, node):
+        if node.lchild and node.rchild:
+            node.height = max(node.lchild.height, node.rchild.height) + 1
+        else:
+            if not node.lchild and not node.rchild:
+                node.height = 0
+            elif not node.lchild:
+                node.height = node.rchild.height + 1
+            else:
+                node.height = node.lchild.height + 1
+
+    def updateHeightAbove(self, node):
+        while node:
+            self.updateHeight(node)
+            node = node.parent
+
+    def tallerChild(self, node):
+        l = node.lchild.height if node.lchild else -1
+        r = node.rchild.height if node.rchild else -1
+        if l > r:
+            return node.lchild
+        return node.rchild
+
+    def search(self, data):  # 若根节点为空，返回根节点；若有该数据，返回该节点；若无该数据，返回该数据应该在的空节点
         node = self.root
-        parent = None    # 父节点
+        hot = None  # 指向命中节点的父亲
         new_node = Node(None)  # 空节点
         while node:
             if node.data == data:
-                return node, parent
+                return node, hot
             elif node.data < data:
-                parent = node
+                hot = node
                 if node.rchild is None:
                     node.rchild = new_node
-                    return new_node, parent
+                    return new_node, hot
                 node = node.rchild
             else:
-                parent = node
+                hot = node
                 if node.lchild is None:
                     node.lchild = new_node
-                    return new_node, parent
+                    return new_node, hot
                 node = node.lchild
-        return node, parent
+        return node, hot
+
     def insert(self, data):
-        node, parent = self.search(data)
+        node, hot = self.search(data)
         if node is None:
             self.root = Node(data)
-        else:
+        elif node.data is None:
             node.data = data
+            node.parent = hot
+            self.updateHeightAbove(node)
+
     def remove(self, data):
-        node, parent = self.search(data)
+        node, hot = self.search(data)
         if node is None or node.data is None:
             return False
-        else:
-            # 某一子树为空
-            if node.lchild is None:
-                if data < parent.data:
-                    parent.lchild = node.rchild
-                else:
-                    parent.rchild = node.rchild
-                del node
-            elif node.rchild is None:
-                if data < parent.data:
-                    parent.lchild = node.lchild
-                else:
-                    parent.rchild = node.lchild
-                del node
-            # 子树都不为空
-            else:
-                succ = node.rchild
-                if succ.lchild is None:
-                    node.data = succ.data
-                    node.rchild = succ.rchild
-                else:
-                    while succ.lchild:
-                        parent = succ
-                        succ = succ.lchild
-                    node.data = succ.data
-                    parent.lchild = succ.rchild
-                del succ
+        self.removeAt(node, data)
+        self.updateHeightAbove(node.parent)
         return True
 
+    def removeAt(self, node, data):
+        # 某一子树为空
+        if node.lchild is None:
+            if data < node.parent.data:
+                node.parent.lchild = node.rchild
+            else:
+                node.parent.rchild = node.rchild
+            del node
+        elif node.rchild is None:
+            if data < node.parent.data:
+                node.parent.lchild = node.lchild
+            else:
+                node.parent.rchild = node.lchild
+            del node
+        # 子树都不为空，找直接后继
+        else:
+            succ = node.rchild
+            if succ.lchild is None:
+                node.data = succ.data
+                node.rchild = succ.rchild
+            else:
+                while succ.lchild:
+                    succ = succ.lchild
+                node.data = succ.data
+                succ.parent.lchild = succ.rchild
+            del succ
+
+
 b = BST()
-for i in [16, 10, 25, 5, 11, 19, 28, 30, 21]:
+for i in [16, 10, 25, 5, 11, 19, 28, 26, 30, 21]:
     b.insert(i)
 print(b.inorder(b.root))
+print(b.search(28)[0].height)
 b.remove(25)
 print(b.inorder(b.root))
 print(b.preorder(b.root))
 print(b.travLevel(b.root))
+print(b.search(19)[0].parent.data)
+print(b.search(28)[0].height)
+---------------------------------------------------------------------------
+# 平衡二叉树 BBST
+AVL树，适度平衡，S(h)=1+S(h-1)+S(h-2) ==> S(h)=fib(h+3)-1 个节点
+class AVL(BST):
+    def AVLblanced(self, node):
+        l = node.lchild.height if node.lchild else -1
+        r = node.rchild.height if node.rchild else -1
+        Balfac = l - r
+        if 2 > Balfac > -2:
+            return True
+
+    def insert(self, data):
+        node, hot = self.search(data)
+        if node is None:
+            self.root = Node(data)
+        elif node.data is None:
+            node.data = data
+            node.parent = hot
+            while node.parent:
+                if not self.AVLblanced(node.parent):  # 若父节点失衡
+                    self.rotateAt(self.tallerChild(self.tallerChild(node.parent)))
+                    break
+                else:
+                    self.updateHeight(node.parent)
+                node = node.parent
+
+    def remove(self, data):
+        node, hot = self.search(data)
+        if not node or node.data is None:
+            return False
+        self.removeAt(node, data)
+        while node.parent:
+            if not self.AVLblanced(node.parent):  # 若父节点失衡
+                node = self.rotateAt(self.tallerChild(self.tallerChild(node.parent)))
+            self.updateHeight(node.parent)
+            node = node.parent
+        return True
+
+    def rotateAt(self, v):
+        p = v.parent
+        g = p.parent
+        if g.lchild == p:  # zig
+            if p.lchild == v:  # zig-zig
+                p.parent = g.parent
+                return self.connect34(v, p, g, v.lchild, v.rchild, p.rchild, g.rchild)
+            else:  # zig-zag
+                v.parent = g.parent
+                return self.connect34(p, v, g, p.lchild, v.lchild, v.rchild, g.rchild)
+        else:  # zag
+            if p.rchild == v:  # zag-zag
+                p.parent = g.parent
+                return self.connect34(g, p, v, g.lchild, p.lchild, v.lchild, v.rchild)
+            else:  # zag-zig
+                v.parent = g.parent
+                return self.connect34(g, v, p, g.lchild, v.lchild, v.rchild, p.rchild)
+
+    def connect34(self, a, b, c, t0, t1, t2, t3):
+        a.lchild, a.rchild = t0, t1
+        if t0: t0.parent = a
+        if t1: t1.parent = a
+        self.updateHeight(a)
+        c.lchild, c.rchild = t2, t3
+        if t2: t2.parent = c
+        if t3: t3.parent = c
+        self.updateHeight(c)
+        b.lchild, b.rchild = a, c
+        a.parent = b
+        c.parent = b
+        self.updateHeight(b)
+        if b.parent is None:
+            self.root = b
+        else:
+            if b.parent.data < b.data:
+                b.parent.rchild = b
+            else:
+                b.parent.lchild = b
+        return b
+
+
+avl = AVL()
+for i in range(1, 10):
+    avl.insert(i)
+print(avl.travLevel(avl.root))
+avl.remove(6)
+print(avl.travLevel(avl.root))
+---------------------------------------------------------------------------
