@@ -578,3 +578,118 @@ print(avl.travLevel(avl.root))
 avl.remove(6)
 print(avl.travLevel(avl.root))
 ---------------------------------------------------------------------------
+# 伸展树   分摊复杂度O(log n)与AVL树相当
+当局部性强、缓存命中率高时(即k<<n<<m) 效率可达O(log k)
+class Splay(BST):
+    def search(self, data):   # 不再属于静态接口
+        node, hot = super().search(data)
+        # 无论成功与否，最后被访问的节点都将伸展至根
+        # 判断 node
+        if node is None:
+            pass
+        elif node.data is None:
+            del node
+            self.splay(hot)
+        else:
+            self.splay(node)
+        # 总是返回根节点
+        return self.root
+
+    def insert(self, data):
+        node = Node(data)
+        root = self.search(data)
+        if root is None:
+            self.root = node
+            return
+        root.parent = node
+        if root.data < data:
+            node.rchild = root.rchild
+            node.lchild = root
+            root.rchild.parent = node
+        elif root.data > data:
+            node.lchild = root.lchild
+            node.rchild = root
+            root.lchild.parent = node
+        else:
+            return False
+        self.root = node
+        self.updateHeightAbove(root)
+
+    def remove(self, data):
+        node = self.search(data)
+        if node is None or node.data != data:
+            return
+        if node.data == data:    # 目标节点即是树根
+            if node.rchild is None and node.lchild is None:
+                pass
+            elif node.rchild is None:
+                self.root = node.lchild
+                node.lchild.parent = None
+            elif node.lchild is None:
+                self.root = node.rchild
+                node.rchild.parent = None
+            else:
+                node = node.rchild
+                while node.lchild:
+                    node = node.lchild
+                self.root.data = node.data
+            del node
+
+    def splay(self, v):
+        if not v:
+            return
+        while v.parent:
+            p, g = [v.parent, v.parent.parent]
+            if g is None:   # p是根节点
+                if p.lchild == v:
+                    self.attachAsLchild(p, v.rchild)
+                    self.attachAsRchild(v, p)
+                else:
+                    self.attachAsRchild(p, v.lchild)
+                    self.attachAsLchild(v, p)
+                v.parent = None
+                self.root = v
+                break
+            gg = g.parent
+            if p.lchild == v:
+                if g.lchild == p:          # zig-zig
+                    self.attachAsLchild(g, p.rchild)
+                    self.attachAsLchild(p, v.rchild)
+                    self.attachAsRchild(p, g)
+                    self.attachAsRchild(v, p)
+                else:                     # zag-zig
+                    self.attachAsRchild(g, v.lchild)
+                    self.attachAsLchild(p, v.rchild)
+                    self.attachAsLchild(v, g)
+                    self.attachAsRchild(v, p)
+            else:
+                if g.rchild == p:          # zag-zag
+                    self.attachAsRchild(g, p.lchild)
+                    self.attachAsRchild(p, v.lchild)
+                    self.attachAsLchild(p, g)
+                    self.attachAsLchild(v, p)
+                else:                     # zig-zag
+                    self.attachAsLchild(g, v.rchild)
+                    self.attachAsRchild(p, v.Lchild)
+                    self.attachAsRchild(v, g)
+                    self.attachAsLchild(v, p)
+            if gg is None:
+                v.parent = None
+                self.root = v
+            else:
+                if gg.lchild == g:
+                    self.attachAsLchild(gg, v)
+                else:
+                    self.attachAsRchild(gg, v)
+            self.updateHeight(g)
+            self.updateHeight(p)
+            self.updateHeight(v)
+        return v
+
+    def attachAsLchild(self, a, b):
+        a.lchild = b
+        b.parent = a
+
+    def attachAsRchild(self, a, b):
+        a.rchild = b
+        b.parent = a
